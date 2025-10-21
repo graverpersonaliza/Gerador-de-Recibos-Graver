@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Gerador de Recibos - Prévia</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f3f4f6; color: #111; }
+    .container { max-width: 1100px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 8px 30px rgba(2,6,23,0.08); }
+    h1 { text-align:center; margin-bottom:8px; }
+    .nav-tabs { display:flex; gap:8px; margin: 18px 0; justify-content:center; }
+    .nav-tab { padding:10px 16px; background:#eef2ff; border-radius:8px; cursor:pointer; font-weight:700; color:#0b63d6; }
+    .nav-tab.active { background:#fff; box-shadow:0 0 0 2px rgba(59,130,246,0.12); }
+    .form-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px; align-items:start; }
+    label { display:block; margin-top:6px; font-weight:600; font-size:13px; }
+    input, select, textarea { width:100%; padding:8px; margin-top:6px; border-radius:6px; border:1px solid #d1d5db; font-size:14px; box-sizing:border-box; }
+    .inline-row { display:flex; gap:8px; align-items:center; }
+    .inline-row input { flex:1; }
+    .full-row { grid-column:1/-1; }
+    .btn { margin-top:14px; padding:10px 14px; border:none; border-radius:8px; background:#2563eb; color:white; cursor:pointer; font-weight:700; }
+    .btn.secondary { background:#6b7280; }
+    .recibo-box { display:none; margin-top:20px; padding:18px; border:1px solid #111; background:#fff; }
+    .recibo-header { text-align:center; border-bottom:3px solid #111; padding-bottom:10px; margin-bottom:14px; }
+    .assinatura { margin-top:26px; text-align:center; }
+    .action-buttons { display:flex; gap:8px; margin-top:14px; justify-content:center; }
+    hr.dashed { border:none; border-top:2px dashed #999; margin:22px 0; }
+    @media print { .nav-tabs, .action-buttons, .btn, .form-grid { display:none!important; } body { background:white; } .container { box-shadow:none; } }
+    .muted { color:#555; font-size:13px; }
+    .small { font-size:13px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Gerador de Recibos</h1>
+
+    <div class="nav-tabs">
+      <div class="nav-tab active" data-tab="aluguel">🏠 Recibo de Aluguel</div>
+      <div class="nav-tab" data-tab="simples">📄 Recibo Simples</div>
+    </div>
+
+    <!-- ABA ALUGUEL -->
+    <div id="aba-aluguel" class="tab" style="display:block;">
+      <form id="form-aluguel">
+        <div class="form-grid">
+          <div>
+            <label>Locador *</label>
+            <div class="inline-row">
+              <input type="text" id="locador" placeholder="Nome do locador" required />
+              <input type="text" id="cpfLocador" placeholder="CPF/CNPJ" style="max-width:180px;" />
+            </div>
+
+            <label>Locatário *</label>
+            <div class="inline-row">
+              <input type="text" id="locatario" placeholder="Nome do locatário" required />
+              <input type="text" id="cpfLocatario" placeholder="CPF/CNPJ" style="max-width:180px;" />
+            </div>
+          </div>
+
+          <div>
+            <label>Mês de Referência *</label>
+            <select id="mesReferencia" required>
+              <option value="">Selecione</option>
+              <option>Janeiro</option><option>Fevereiro</option><option>Março</option><option>Abril</option>
+              <option>Maio</option><option>Junho</option><option>Julho</option><option>Agosto</option>
+              <option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option>
+            </select>
+
+            <label>Ano *</label>
+            <input type="number" id="ano" value="" placeholder="2025" required />
+
+            <label>Tipo de Imóvel</label>
+            <input type="text" id="tipoImovel" placeholder="Ex: Apartamento" />
+          </div>
+
+          <div class="full-row">
+            <label>Endereço do Imóvel *</label>
+            <div class="inline-row">
+              <input type="text" id="cep" placeholder="CEP (após preencher, desfocar para buscar)" style="max-width:120px;" required />
+              <input type="text" id="endereco" placeholder="Endereço (logradouro)" required />
+              <input type="text" id="numero" placeholder="Nº" style="max-width:90px;" required />
+              <input type="text" id="bairro" placeholder="Bairro" style="max-width:160px;" required />
+              <input type="text" id="cidade" placeholder="Cidade" style="max-width:160px;" required />
+              <input type="text" id="uf" placeholder="UF" style="max-width:80px;" required />
+            </div>
+            <label>Complemento</label>
+            <input type="text" id="complemento" placeholder="Complemento (opcional)" />
+          </div>
+
+          <div>
+            <label>Valor (R$) *</label>
+            <input type="number" id="valorAluguel" step="0.01" placeholder="1200.00" required />
+
+            <label>Forma de Pagamento *</label>
+            <select id="formaPagamentoAluguel" required>
+              <option>Dinheiro</option><option>Pix</option><option>Cheque</option><option>Transferência/Depósito</option><option>Cartão</option>
+            </select>
+
+            <label>Data do Pagamento *</label>
+            <input type="date" id="dataPagamentoAluguel" required />
+          </div>
+
+          <div class="full-row">
+            <label>Observações</label>
+            <textarea id="observacaoAluguel" rows="3" placeholder="Observações adicionais..."></textarea>
+          </div>
+
+          <div class="full-row">
+            <label><input type="checkbox" id="duasViasAluguel" /> Gerar recibo em duas vias</label>
+          </div>
+        </div>
+
+        <div style="text-align:center; margin-top:12px;">
+          <button type="button" class="btn" id="btnGerarAluguel">🏠 Gerar Recibo de Aluguel</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- ABA SIMPLES -->
+    <div id="aba-simples" class="tab" style="display:none;">
+      <form id="form-simples">
+        <div class="form-grid">
+          <div>
+            <label>Valor *</label>
+            <input type="number" id="valorSimples" step="0.01" placeholder="1200.00" required />
+
+            <label>Pagador *</label>
+            <div class="inline-row">
+              <input type="text" id="pagadorNome" placeholder="Nome do pagador" required />
+              <input type="text" id="pagadorCpf" placeholder="CPF/CNPJ" style="max-width:180px;" />
+            </div>
+
+            <label>Emissor (quem recebe)</label>
+            <div class="inline-row">
+              <input type="text" id="emissorNome" placeholder="Nome do emissor" />
+              <input type="text" id="emissorCpf" placeholder="CPF/CNPJ" style="max-width:180px;" />
+            </div>
+
+            <label>Referente a</label>
+            <input type="text" id="referente" placeholder="prestação de serviços, aluguel, etc." />
+          </div>
+
+          <div>
+            <label>Cidade *</label>
+            <input type="text" id="cidadeSimples" required />
+
+            <label>Data do Pagamento *</label>
+            <input type="date" id="dataPagamentoSimples" required />
+
+            <label>Forma de Pagamento *</label>
+            <select id="formaPagamentoSimples" required>
+              <option>Dinheiro</option><option>Pix</option><option>Cheque</option><option>Transferência/Depósito</option><option>Cartão</option>
+            </select>
+
+            <label>Telefone (opcional)</label>
+            <input type="text" id="telefoneSimples" placeholder="(11) 99999-9999" />
+          </div>
+
+          <div class="full-row">
+            <label>Observações</label>
+            <textarea id="observacaoSimples" rows="3" placeholder="Observações adicionais..."></textarea>
+          </div>
+
+          <div class="full-row">
+            <label><input type="checkbox" id="duasViasSimples" /> Gerar recibo em duas vias</label>
+          </div>
+        </div>
+
+        <div style="text-align:center; margin-top:12px;">
+          <button type="button" class="btn" id="btnGerarSimples">📄 Gerar Recibo Simples</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- PRÉVIA DO RECIBO -->
+    <div id="reciboBox" class="recibo-box" aria-live="polite">
+      <div id="reciboContent" class="small"></div>
+
+      <div class="action-buttons">
+        <button class="btn" id="btnImprimir">🖨️ Imprimir</button>
+        <button class="btn secondary" id="btnEditar">✏️ Voltar / Editar</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // ===== utilitários e configuração =====
+    const mesesPt = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+
+    // Corrige fuso: gera uma string YYYY-MM-DD local (evita -1 dia)
+    function hojeISOlocal(){
+      // toLocaleDateString('en-CA') retorna YYYY-MM-DD no ambiente do navegador
+      return new Date().toLocaleDateString('en-CA');
+    }
+
+    // Formata data ISO (YYYY-MM-DD) para dd/mm/YYYY sem mexer no timezone
+    function formatarDataSimples(dataISO){
+      if(!dataISO) return '';
+      if(/^\d{4}-\d{2}-\d{2}$/.test(dataISO)){
+        const p = dataISO.split('-'); return `${p[2]}/${p[1]}/${p[0]}`;
+      }
+      return new Date(dataISO).toLocaleDateString('pt-BR');
+    }
+
+    // Formata data longa para rodapé: 21 de outubro de 2025
+    function formatarDataLonga(dataISO){
+      if(!dataISO) dataISO = hojeISOlocal();
+      const p = dataISO.split('-'); // YYYY-MM-DD
+      const dia = Number(p[2]); const mes = Number(p[1]) - 1; const ano = p[0];
+      return `${dia} de ${mesesPt[mes]} de ${ano}`;
+    }
+
+    // --- número por extenso (reais e centavos) ---
+    function threeDigitsToWords(n){
+      const unidades = ["zero","um","dois","três","quatro","cinco","seis","sete","oito","nove","dez","onze","doze","treze","quatorze","quinze","dezesseis","dezessete","dezoito","dezenove"];
+      const dezenas = ["","","vinte","trinta","quarenta","cinquenta","sessenta","setenta","oitenta","noventa"];
+      const centenas = ["","cento","duzentos","trezentos","quatrocentos","quinhentos","seiscentos","setecentos","oitocentos","novecentos"];
+      n = Number(n);
+      if(n === 0) return '';
+      if(n === 100) return 'cem';
+      let s = ''; const c = Math.floor(n/100); const resto = n % 100;
+      if(c > 0) s += centenas[c];
+      if(resto > 0){
+        if(s) s += ' e ';
+        if(resto < 20) s += unidades[resto];
+        else { const d = Math.floor(resto/10); const u = resto % 10; s += dezenas[d]; if(u>0) s += ' e ' + unidades[u]; }
+      }
+      return s;
+    }
+
+    function numeroPorExtenso(valor){
+      let totalCentavos = Math.round((Number(valor) || 0) * 100);
+      let reais = Math.floor(totalCentavos/100);
+      let centavos = totalCentavos % 100;
+      if(reais === 0 && centavos === 0) return 'zero reais';
+
+      const escalasSingular = ['', 'mil', 'milhão', 'bilhão', 'trilhão'];
+      const escalasPlural = ['', 'mil', 'milhões', 'bilhões', 'trilhões'];
+
+      function intToWords(n){
+        if(n === 0) return '';
+        let grupos = [];
+        while(n>0){ grupos.push(n%1000); n = Math.floor(n/1000); }
+        let partes = [];
+        for(let i = grupos.length -1; i >= 0; i--){
+          const g = grupos[i]; if(g===0) continue;
+          const textoGrupo = threeDigitsToWords(g);
+          if(i === 0) partes.push(textoGrupo);
+          else if(i === 1) { if(g === 1) partes.push('mil'); else partes.push(textoGrupo + ' mil'); }
+          else { if(g === 1) partes.push(textoGrupo + ' ' + escalasSingular[i]); else partes.push(textoGrupo + ' ' + escalasPlural[i]); }
+        }
+        if(partes.length === 0) return '';
+        if(partes.length === 1) return partes[0];
+        const last = partes.pop(); return partes.join(', ') + ' e ' + last;
+      }
+
+      let textoReais = intToWords(reais); if(textoReais) textoReais += (reais === 1 ? ' real' : ' reais');
+      let textoCentavos = ''; if(centavos>0){ const textoC = threeDigitsToWords(centavos); textoCentavos = textoC + (centavos === 1 ? ' centavo' : ' centavos'); }
+      if(textoReais && textoCentavos) return textoReais + ' e ' + textoCentavos;
+      if(textoReais) return textoReais; return textoCentavos;
+    }
+
+    function formatarMoeda(v){
+      const n = Number(v) || 0;
+      return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(n);
+    }
+
+    // ===== navegação entre abas =====
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+      tab.addEventListener('click', (e) => {
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        e.currentTarget.classList.add('active');
+        const target = e.currentTarget.getAttribute('data-tab');
+        document.querySelectorAll('.tab').forEach(t => t.style.display = 'none');
+        document.getElementById('aba-' + target).style.display = 'block';
+      });
+    });
+
+    // ===== inicialização de datas padrão =====
+    document.addEventListener('DOMContentLoaded', () => {
+      const todayISO = hojeISOlocal();
+      const dAlug = document.getElementById('dataPagamentoAluguel');
+      const dSimp = document.getElementById('dataPagamentoSimples');
+      if(dAlug && !dAlug.value) dAlug.value = todayISO;
+      if(dSimp && !dSimp.value) dSimp.value = todayISO;
+
+      // Inicializa ano padrão se vazio
+      const anoInput = document.getElementById('ano');
+      if(anoInput && !anoInput.value) anoInput.value = new Date().getFullYear();
+    });
+
+    // ===== ViaCEP: preencher endereço por CEP (após blur) =====
+    const cepInput = document.getElementById('cep');
+    cepInput.addEventListener('blur', async () => {
+      try{
+        const cep = cepInput.value.replace(/\D/g,'');
+        if(cep.length === 8){
+          const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+          const data = await res.json();
+          if(!data.erro){
+            // apenas preenche se os campos estiverem vazios (não sobrescreve dados)
+            const e = document.getElementById('endereco');
+            const b = document.getElementById('bairro');
+            const c = document.getElementById('cidade');
+            const u = document.getElementById('uf');
+            if(e && (!e.value || e.value.trim()==='')) e.value = data.logradouro || '';
+            if(b && (!b.value || b.value.trim()==='')) b.value = data.bairro || '';
+            if(c && (!c.value || c.value.trim()==='')) c.value = data.localidade || '';
+            if(u && (!u.value || u.value.trim()==='')) u.value = data.uf || '';
+          }
+        }
+      }catch(err){
+        console.error('Erro ViaCEP:', err);
+      }
+    });
+
+    // ===== gerar recibo de aluguel =====
+    document.getElementById('btnGerarAluguel').addEventListener('click', () => {
+      const dados = {
+        locador: (document.getElementById('locador').value || '').trim(),
+        cpfLocador: (document.getElementById('cpfLocador').value || '').trim(),
+        locatario: (document.getElementById('locatario').value || '').trim(),
+        cpfLocatario: (document.getElementById('cpfLocatario').value || '').trim(),
+        mes: (document.getElementById('mesReferencia').value || '').trim(),
+        ano: (document.getElementById('ano').value || '').trim(),
+        tipoImovel: (document.getElementById('tipoImovel').value || '').trim(),
+        cep: (document.getElementById('cep').value || '').trim(),
+        endereco: (document.getElementById('endereco').value || '').trim(),
+        numero: (document.getElementById('numero').value || '').trim(),
+        complemento: (document.getElementById('complemento').value || '').trim(),
+        bairro: (document.getElementById('bairro').value || '').trim(),
+        cidade: (document.getElementById('cidade').value || '').trim(),
+        uf: (document.getElementById('uf').value || '').trim(),
+        valor: (document.getElementById('valorAluguel').value || '').trim(),
+        forma: (document.getElementById('formaPagamentoAluguel').value || '').trim(),
+        data: (document.getElementById('dataPagamentoAluguel').value || '').trim(),
+        observacao: (document.getElementById('observacaoAluguel').value || '').trim(),
+        duasVias: document.getElementById('duasViasAluguel').checked
+      };
+
+      // validação mínima
+      if(!dados.locador || !dados.locatario || !dados.mes || !dados.ano || !dados.endereco || !dados.numero || !dados.bairro || !dados.cidade || !dados.uf || !dados.valor || !dados.forma || !dados.data){
+        alert('Preencha todos os campos obrigatórios (*)');
+        return;
+      }
+
+      const valorNum = parseFloat(String(dados.valor).replace(/,/g,'.')) || 0;
+      const cidadeRodape = dados.cidade || '';
+
+      // Monta conteúdo principal do recibo
+      let main = `<div class="recibo-header"><h2>RECIBO DE ALUGUEL</h2></div>`;
+      main += `<p><strong>LOCADOR:</strong> ${dados.locador}${dados.cpfLocador ? ' (CPF/CNPJ: '+dados.cpfLocador+')' : ''}</p>`;
+      main += `<p><strong>LOCATÁRIO:</strong> ${dados.locatario}${dados.cpfLocatario ? ' (CPF/CNPJ: '+dados.cpfLocatario+')' : ''}</p>`;
+      main += `<p><strong>IMÓVEL:</strong> ${dados.tipoImovel ? dados.tipoImovel + ' - ' : ''}${dados.endereco}, ${dados.numero}${dados.complemento ? ' - '+dados.complemento : ''} - ${dados.bairro}, ${dados.cidade}/${dados.uf} - CEP: ${dados.cep}</p>`;
+      main += `<p><strong>REFERÊNCIA:</strong> ${dados.mes}/${dados.ano}</p>`;
+      main += `<p><strong>VALOR:</strong> ${formatarMoeda(valorNum)} (${numeroPorExtenso(valorNum)})</p>`;
+      main += `<p><strong>FORMA DE PAGAMENTO:</strong> ${dados.forma}</p>`;
+      main += `<p><strong>DATA DO PAGAMENTO:</strong> ${formatarDataSimples(dados.data)}</p>`;
+      if(dados.observacao) main += `<p><strong>OBSERVAÇÕES:</strong> ${dados.observacao}</p>`;
+
+      // rodapé com cidade e data por extenso
+      const dataRodape = formatarDataLonga(dados.data || hojeISOlocal());
+      main += `<p class="muted">${cidadeRodape ? cidadeRodape + ', ' : ''}${dataRodape}</p>`;
+      main += `<div class="assinatura">______________________________________<br>Assinatura</div>`;
+
+      let finalHtml = main;
+
+      // se duas vias, duplica com linha pontilhada
+      if(dados.duasVias){
+        finalHtml += `<hr class="dashed">` + main.replace('RECIBO DE ALUGUEL','RECIBO DE ALUGUEL - 2ª VIA');
+      }
+
+      document.getElementById('reciboContent').innerHTML = finalHtml;
+      document.getElementById('reciboBox').style.display = 'block';
+      window.scrollTo(0, document.getElementById('reciboBox').offsetTop);
+    });
+
+    // ===== gerar recibo simples =====
+    document.getElementById('btnGerarSimples').addEventListener('click', () => {
+      const dados = {
+        valor: (document.getElementById('valorSimples').value || '').trim(),
+        pagadorNome: (document.getElementById('pagadorNome').value || '').trim(),
+        pagadorCpf: (document.getElementById('pagadorCpf').value || '').trim(),
+        emissorNome: (document.getElementById('emissorNome').value || '').trim(),
+        emissorCpf: (document.getElementById('emissorCpf').value || '').trim(),
+        referente: (document.getElementById('referente').value || '').trim(),
+        cidade: (document.getElementById('cidadeSimples').value || '').trim(),
+        data: (document.getElementById('dataPagamentoSimples').value || '').trim(),
+        forma: (document.getElementById('formaPagamentoSimples').value || '').trim(),
+        telefone: (document.getElementById('telefoneSimples').value || '').trim(),
+        observacao: (document.getElementById('observacaoSimples').value || '').trim(),
+        duasVias: document.getElementById('duasViasSimples').checked
+      };
+
+      if(!dados.valor || !dados.pagadorNome || !dados.cidade || !dados.data || !dados.forma){
+        alert('Preencha todos os campos obrigatórios (*)');
+        return;
+      }
+
+      const valorNum = parseFloat(String(dados.valor).replace(/,/g,'.')) || 0;
+
+      let main = `<div class="recibo-header"><h2>RECIBO</h2></div>`;
+      main += `<p><strong>Valor:</strong> ${formatarMoeda(valorNum)} (${numeroPorExtenso(valorNum)})</p>`;
+      main += `<p><strong>Pagador:</strong> ${dados.pagadorNome}${dados.pagadorCpf ? ' (CPF/CNPJ: '+dados.pagadorCpf+')' : ''}</p>`;
+      if(dados.emissorNome) main += `<p><strong>Emissor:</strong> ${dados.emissorNome}${dados.emissorCpf ? ' (CPF/CNPJ: '+dados.emissorCpf+')' : ''}</p>`;
+      if(dados.referente) main += `<p><strong>Referente a:</strong> ${dados.referente}</p>`;
+      main += `<p><strong>Cidade/Data:</strong> ${dados.cidade}, ${formatarDataSimples(dados.data)}</p>`;
+      main += `<p><strong>Forma de Pagamento:</strong> ${dados.forma}</p>`;
+      if(dados.telefone) main += `<p><strong>Telefone:</strong> ${dados.telefone}</p>`;
+      if(dados.observacao) main += `<p><strong>Observações:</strong> ${dados.observacao}</p>`;
+
+      // rodapé
+      const dataLonga = formatarDataLonga(dados.data || hojeISOlocal());
+      main += `<p class="muted">${dados.cidade ? (dados.cidade + ', ') : ''}${dataLonga}</p>`;
+      main += `<div class="assinatura">______________________________________<br>Assinatura</div>`;
+
+      let finalHtml = main;
+      if(dados.duasVias){
+        finalHtml += `<hr class="dashed">` + main.replace('RECIBO','RECIBO - 2ª VIA');
+      }
+
+      document.getElementById('reciboContent').innerHTML = finalHtml;
+      document.getElementById('reciboBox').style.display = 'block';
+      window.scrollTo(0, document.getElementById('reciboBox').offsetTop);
+    });
+
+    // ===== imprimir / editar =====
+    document.getElementById('btnImprimir').addEventListener('click', () => {
+      window.print();
+    });
+    document.getElementById('btnEditar').addEventListener('click', () => {
+      document.getElementById('reciboBox').style.display = 'none';
+      // mantém aba atual aberta para edição
+    });
+
+  </script>
+</body>
+</html>
