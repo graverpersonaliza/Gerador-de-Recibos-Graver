@@ -474,7 +474,7 @@ hr.dashed { border:none; border-top:2px dashed #999; margin:22px 0; }
       document.getElementById('reciboBox').style.display = 'none';
       // mantém aba atual aberta para edição
     });
-// ===== Funções auxiliares CPF/CNPJ =====
+// ===== Máscara CPF/CNPJ estável (sem mover cursor) =====
 function somenteDigitos(valor) {
   return (valor || '').replace(/\D/g, '');
 }
@@ -483,28 +483,36 @@ function mascararCpfCnpj(valor) {
   const v = somenteDigitos(valor);
   if (v.length <= 11) {
     // CPF -> 000.000.000-00
-    return v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, (_, a, b, c, d) => {
-      return d ? `${a}.${b}.${c}-${d}` : `${a}.${b}.${c}`;
-    });
+    return v
+      .replace(/^(\d{3})(\d)/, '$1.$2')
+      .replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3')
+      .replace(/\.(\d{3})(\d)/, '.$1-$2')
+      .replace(/(-\d{2})\d+?$/, '$1');
   } else {
     // CNPJ -> 00.000.000/0000-00
-    return v.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, (_, a, b, c, d, e) => {
-      return e ? `${a}.${b}.${c}/${d}-${e}` : `${a}.${b}.${c}/${d}`;
-    });
+    return v
+      .replace(/^(\d{2})(\d)/, '$1.$2')
+      .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+      .replace(/\.(\d{3})(\d)/, '.$1/$2')
+      .replace(/(\d{4})(\d)/, '$1-$2')
+      .replace(/(-\d{2})\d+?$/, '$1');
   }
 }
 
-// Aplica a máscara automaticamente nos campos relevantes
-['cpfLocador','cpfLocatario','pagadorCpf','emissorCpf'].forEach(id => {
+// Aplica automaticamente aos campos
+['cpfLocador', 'cpfLocatario', 'pagadorCpf', 'emissorCpf'].forEach(id => {
   const campo = document.getElementById(id);
   if (campo) {
-    campo.addEventListener('input', () => {
-      const start = campo.selectionStart;
-      campo.value = mascararCpfCnpj(campo.value);
-      campo.setSelectionRange(start, start);
+    campo.addEventListener('input', e => {
+      const pos = e.target.selectionStart;
+      const antes = e.target.value;
+      e.target.value = mascararCpfCnpj(e.target.value);
+      const diff = e.target.value.length - antes.length;
+      e.target.setSelectionRange(pos + diff, pos + diff);
     });
   }
 });
+
   </script>
 </body>
 </html>
