@@ -540,7 +540,19 @@ function mascararCpfCnpj(valor) {
     });
   }
 });
-
+// ===== Deixa "Observações" em negrito na impressão =====
+document.addEventListener('DOMContentLoaded', () => {
+  const observer = new MutationObserver(() => {
+    const obsTextos = document.querySelectorAll('#reciboContent p');
+    obsTextos.forEach(p => {
+      if (p.textContent.trim().startsWith('OBSERVAÇÕES:')) {
+        p.style.fontWeight = 'bold';
+      }
+    });
+  });
+  observer.observe(document.getElementById('reciboContent'), { childList: true, subtree: true });
+});
+    
   </script>
 </body>
 </html>
