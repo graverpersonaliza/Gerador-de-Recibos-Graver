@@ -483,12 +483,12 @@ function mascararCpfCnpj(valor) {
   const v = somenteDigitos(valor);
   if (v.length <= 11) {
     // CPF -> 000.000.000-00
-    return v.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/, (_, a, b, c, d) => {
+    return v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, (_, a, b, c, d) => {
       return d ? `${a}.${b}.${c}-${d}` : `${a}.${b}.${c}`;
     });
   } else {
     // CNPJ -> 00.000.000/0000-00
-    return v.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{0,2})/, (_, a, b, c, d, e) => {
+    return v.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, (_, a, b, c, d, e) => {
       return e ? `${a}.${b}.${c}/${d}-${e}` : `${a}.${b}.${c}/${d}`;
     });
   }
