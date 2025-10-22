@@ -35,6 +35,20 @@
   border-radius: 5px;
   white-space: pre-wrap;
 }
+    /* ===== Ajuste de fonte para impressão ===== */
+@media print {
+  body { font-family: "Times New Roman", serif; }
+  p strong { font-family: "Courier New", monospace; font-size: 14px; }
+  .recibo-header h2 {
+    font-family: "Times New Roman", serif;
+    font-size: 18px;
+    text-transform: uppercase;
+  }
+  .assinatura {
+    font-family: "Times New Roman", serif;
+    font-size: 13px;
+  }
+}
 
 /* ===== Estilo apenas para a impressão/PDF ===== */
 @media print {
