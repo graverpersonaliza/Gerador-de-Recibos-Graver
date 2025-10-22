@@ -23,20 +23,29 @@
     .recibo-header { text-align:center; border-bottom:3px solid #111; padding-bottom:10px; margin-bottom:14px; }
     .assinatura { margin-top:26px; text-align:center; }
     .action-buttons { display:flex; gap:8px; margin-top:14px; justify-content:center; }
-/* ===== Estilo especial para a impressão (PDF) ===== */
+/* ===== Estilo para o texto das observações no recibo ===== */
+#reciboContent p.observacao-texto {
+  font-family: 'Courier New', monospace; /* fonte técnica, ideal para números */
+  font-size: 14px;
+  color: #0b0b0b; /* texto preto */
+  font-weight: 600;
+  background-color: #f9fafb;
+  border: 1px dashed #cbd5e1;
+  padding: 6px;
+  border-radius: 5px;
+  white-space: pre-wrap;
+}
+
+/* ===== Estilo apenas para a impressão/PDF ===== */
 @media print {
-  textarea#observacaoAluguel,
-  textarea#observacaoSimples {
-    display: block;
-    width: 100%;
-    font-family: 'Times New Roman', serif; /* aparência mais formal */
+  #reciboContent p.observacao-texto {
+    font-family: 'Times New Roman', serif; /* estilo formal */
     font-size: 14px;
-    font-weight: normal;
     color: #000;
+    font-weight: normal;
     border: none;
     background: none;
     padding: 0;
-    white-space: pre-wrap; /* mantém quebras de linha */
   }
 }
 
@@ -389,7 +398,7 @@ hr.dashed { border:none; border-top:2px dashed #999; margin:22px 0; }
       main += `<p><strong>VALOR:</strong> ${formatarMoeda(valorNum)} (${numeroPorExtenso(valorNum)})</p>`;
       main += `<p><strong>FORMA DE PAGAMENTO:</strong> ${dados.forma}</p>`;
       main += `<p><strong>DATA DO PAGAMENTO:</strong> ${formatarDataSimples(dados.data)}</p>`;
-      if(dados.observacao) main += `<p><strong>OBSERVAÇÕES:</strong> ${dados.observacao}</p>`;
+    if(dados.observacao) main += `<p class="observacao-texto"><strong>OBSERVAÇÕES:</strong> ${dados.observacao}</p>`;
 
       // rodapé com cidade e data por extenso
       const dataRodape = formatarDataLonga(dados.data || hojeISOlocal());
@@ -440,7 +449,7 @@ hr.dashed { border:none; border-top:2px dashed #999; margin:22px 0; }
       main += `<p><strong>Cidade/Data:</strong> ${dados.cidade}, ${formatarDataSimples(dados.data)}</p>`;
       main += `<p><strong>Forma de Pagamento:</strong> ${dados.forma}</p>`;
       if(dados.telefone) main += `<p><strong>Telefone:</strong> ${dados.telefone}</p>`;
-      if(dados.observacao) main += `<p><strong>Observações:</strong> ${dados.observacao}</p>`;
+      if(dados.observacao) main += `<p class="observacao-texto"><strong>Observações:</strong> ${dados.observacao}</p>`;
 
       // rodapé
       const dataLonga = formatarDataLonga(dados.data || hojeISOlocal());
