@@ -391,8 +391,8 @@ hr.dashed { border:none; border-top:2px dashed #999; margin:22px 0; }
 
       // Monta conteúdo principal do recibo
       let main = `<div class="recibo-header"><h2>RECIBO DE ALUGUEL</h2></div>`;
-      main += `<p><strong>LOCADOR:</strong> ${dados.locador}${dados.cpfLocador ? ' (CPF/CNPJ: '+dados.cpfLocador+')' : ''}</p>`;
-      main += `<p><strong>LOCATÁRIO:</strong> ${dados.locatario}${dados.cpfLocatario ? ' (CPF/CNPJ: '+dados.cpfLocatario+')' : ''}</p>`;
+      main += `<p><strong>LOCADOR:</strong> ${dados.locador}${dados.cpfLocador ? (somenteDigitos(dados.cpfLocador).length === 11 ? ' (CPF: ' : ' (CNPJ: ') + dados.cpfLocador + ')' : ''}</p>`;
+      main += `<p><strong>LOCATÁRIO:</strong> ${dados.locatario}${dados.cpfLocatario ? (somenteDigitos(dados.cpfLocatario).length === 11 ? ' (CPF: ' : ' (CNPJ: ') + dados.cpfLocatario + ')' : ''}</p>`;
       main += `<p><strong>IMÓVEL:</strong> ${dados.tipoImovel ? dados.tipoImovel + ' - ' : ''}${dados.endereco}, ${dados.numero}${dados.complemento ? ' - '+dados.complemento : ''} - ${dados.bairro}, ${dados.cidade}/${dados.uf} - CEP: ${dados.cep}</p>`;
       main += `<p><strong>REFERÊNCIA:</strong> ${dados.mes}/${dados.ano}</p>`;
       main += `<p><strong>VALOR:</strong> ${formatarMoeda(valorNum)} (${numeroPorExtenso(valorNum)})</p>`;
@@ -443,8 +443,8 @@ hr.dashed { border:none; border-top:2px dashed #999; margin:22px 0; }
 
       let main = `<div class="recibo-header"><h2>RECIBO</h2></div>`;
       main += `<p><strong>Valor:</strong> ${formatarMoeda(valorNum)} (${numeroPorExtenso(valorNum)})</p>`;
-      main += `<p><strong>Pagador:</strong> ${dados.pagadorNome}${dados.pagadorCpf ? ' (CPF/CNPJ: '+dados.pagadorCpf+')' : ''}</p>`;
-      if(dados.emissorNome) main += `<p><strong>Emissor:</strong> ${dados.emissorNome}${dados.emissorCpf ? ' (CPF/CNPJ: '+dados.emissorCpf+')' : ''}</p>`;
+      main += `<p><strong>Pagador:</strong> ${dados.pagadorNome}${dados.pagadorCpf ? (somenteDigitos(dados.pagadorCpf).length === 11 ? ' (CPF: ' : ' (CNPJ: ') + dados.pagadorCpf + ')' : ''}</p>`;
+      if(dados.emissorNome) main += `<p><strong>Emissor:</strong> ${dados.emissorNome}${dados.emissorCpf ? (somenteDigitos(dados.emissorCpf).length === 11 ? ' (CPF: ' : ' (CNPJ: ') + dados.emissorCpf + ')' : ''}</p>`;
       if(dados.referente) main += `<p><strong>Referente a:</strong> ${dados.referente}</p>`;
       main += `<p><strong>Cidade/Data:</strong> ${dados.cidade}, ${formatarDataSimples(dados.data)}</p>`;
       main += `<p><strong>Forma de Pagamento:</strong> ${dados.forma}</p>`;
@@ -474,7 +474,37 @@ hr.dashed { border:none; border-top:2px dashed #999; margin:22px 0; }
       document.getElementById('reciboBox').style.display = 'none';
       // mantém aba atual aberta para edição
     });
+// ===== Funções auxiliares CPF/CNPJ =====
+function somenteDigitos(valor) {
+  return (valor || '').replace(/\D/g, '');
+}
 
+function mascararCpfCnpj(valor) {
+  const v = somenteDigitos(valor);
+  if (v.length <= 11) {
+    // CPF -> 000.000.000-00
+    return v.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/, (_, a, b, c, d) => {
+      return d ? `${a}.${b}.${c}-${d}` : `${a}.${b}.${c}`;
+    });
+  } else {
+    // CNPJ -> 00.000.000/0000-00
+    return v.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{0,2})/, (_, a, b, c, d, e) => {
+      return e ? `${a}.${b}.${c}/${d}-${e}` : `${a}.${b}.${c}/${d}`;
+    });
+  }
+}
+
+// Aplica a máscara automaticamente nos campos relevantes
+['cpfLocador','cpfLocatario','pagadorCpf','emissorCpf'].forEach(id => {
+  const campo = document.getElementById(id);
+  if (campo) {
+    campo.addEventListener('input', () => {
+      const start = campo.selectionStart;
+      campo.value = mascararCpfCnpj(campo.value);
+      campo.setSelectionRange(start, start);
+    });
+  }
+});
   </script>
 </body>
 </html>
