@@ -35,6 +35,20 @@
   border-radius: 5px;
   white-space: pre-wrap;
 }
+    /* ===== Fontes personalizadas para impressão (nomes e números) ===== */
+@media print {
+  /* aplica apenas nos dados principais do recibo */
+  #reciboContent p strong {
+    font-family: "Times New Roman", serif;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  /* mantém o resto com a aparência padrão */
+  #reciboContent, .recibo-header h2, .assinatura {
+    font-family: Arial, sans-serif;
+  }
+}
     /* ===== Ajuste de fonte para impressão ===== */
 @media print {
   body { font-family: "Times New Roman", serif; }
